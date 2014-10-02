@@ -10,6 +10,15 @@ fi
 domainuser=$1
 password=`tr -dc A-Za-z0-9_ < /dev/urandom | head -c8`
 APACHE_LOG_DIR=`grep APACHE_LOG_DIR /etc/apache2/envvars | awk -F'[ $=]' '{ print $3}'`
+path=`pwd`
+file=`echo $0`
+prepath=`echo ${file} | awk -F '/' '{print $1}'`
+execpath="${path}/${prepath}/"
+
+
+echo -e "\e[1;34mWriting FTP login creds to /srv/${domainuser//./}/ftp.cred\e[0m"
+echo "FTP User: ${domainuser//./}" > /srv/${domainuser//./}/ftp.cred
+echo "FTP Password: ${password}" >> /srv/${domainuser//./}/ftp.cred
 
 # Add user and give home
 if id -u ${domainuser//./} >/dev/null 2>&1;
@@ -90,6 +99,8 @@ else
 fi
 
 echo -e "\e[1;32mRestarting apache2\e[0m"
-/root/scripts/createAlias.sh ${domainuser} www.${domainuser}
-
+echo -e "\e[1;34mCreating alias\e[0m"
+${execpath}createAlias.sh ${domainuser} www.${domainuser}
+echo -e "\e[1;34mCreating database and database user\e[0m"
+${execpath}createDatabase.sh ${domainuser}
 
