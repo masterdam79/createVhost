@@ -28,10 +28,8 @@ echo "MySQL Password: ${mySqlUserPassword}" >> /srv/${domainuser//./}/mysql.cred
 
 chmod 750 /srv/${domainuser//./}/mysql.cred
 
-dbCheck=`mysql -u${mysqlAdminUser} -p${mySqlPwFileContent} -e "SHOW DATABASES" | grep cnroodcom 
-| wc -l`
-dbUserCheck=`mysql -u${mysqlAdminUser} -p${mySqlPwFileContent} -e "SELECT user FROM mysql.user" 
-| grep cnroodcom | wc -l`
+dbCheck=`mysql -u${mysqlAdminUser} -p${mySqlPwFileContent} -e "SHOW DATABASES" | grep ${mySqlUser} | wc -l`
+dbUserCheck=`mysql -u${mysqlAdminUser} -p${mySqlPwFileContent} -e "SELECT user FROM mysql.user" | grep ${mySqlUser} | wc -l`
 
 # Check if database already exists, else create database
 if [ "${dbCheck}" -gt 0 ];
