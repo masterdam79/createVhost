@@ -34,6 +34,9 @@ else
         printf "${password}\n${password}\n" | passwd ${domainuser//./}
 fi
 
+# Change user's shell
+chsh -s /bin/bash ${domainuser//./}
+
 # Create home for user
 if [ ! -d /srv/${domainuser//./}/www/${domainuser}/public_html ];
 then
