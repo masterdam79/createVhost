@@ -20,7 +20,9 @@ echo -e "\e[1;34mWriting FTP login creds to /srv/${domainuser//./}/ftp.cred\e[0m
 echo "FTP User: ${domainuser//./}" > /srv/${domainuser//./}/ftp.cred
 echo "FTP Password: ${password}" >> /srv/${domainuser//./}/ftp.cred
 
-chmod 750 /srv/${domainuser//./}/ftp.cred
+# Restrict access to file
+chown ${domainuser//./}. /srv/${domainuser//./}/ftp.cred
+chmod 600 /srv/${domainuser//./}/ftp.cred
 
 # Add user and give home
 if id -u ${domainuser//./} >/dev/null 2>&1;

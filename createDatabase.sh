@@ -26,7 +26,9 @@ echo "MySQL User: ${domainuser//./}" > /srv/${domainuser//./}/mysql.cred
 echo "MySQL Database: ${domainuser//./}" >> /srv/${domainuser//./}/mysql.cred
 echo "MySQL Password: ${mySqlUserPassword}" >> /srv/${domainuser//./}/mysql.cred
 
-chmod 750 /srv/${domainuser//./}/mysql.cred
+# Restrict access to file
+chown ${domainuser//./}. /srv/${domainuser//./}/mysql.cred
+chmod 600 /srv/${domainuser//./}/mysql.cred
 
 dbCheck=`mysql -u${mysqlAdminUser} -p${mySqlPwFileContent} -e "SHOW DATABASES" | grep ${mySqlUser} | wc -l`
 dbUserCheck=`mysql -u${mysqlAdminUser} -p${mySqlPwFileContent} -e "SELECT user FROM mysql.user" | grep ${mySqlUser} | wc -l`
