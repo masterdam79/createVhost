@@ -2,9 +2,9 @@
 
 if [[ -z "$1" ]];
 then
-#       echo -e "\e[1;31m[red]\e[0m"
-        echo -e "\e[1;31mUsage: ./createVhost.sh <domainname.tld>\e[0m"
-        exit
+#	echo -e "\e[1;31m[red]\e[0m"
+	echo -e "\e[1;31mUsage: ./createVhost.sh <domainname.tld>\e[0m"
+	exit
 fi
 
 domainuser=$1
@@ -29,85 +29,79 @@ if id -u ${domainuser//./} >/dev/null 2>&1;
 then
         echo -e "\e[1;33mUser ${domainuser//./} already exists\e[0m"
 else
-        echo -e "\e[1;32mCreating user ${domainuser//./} with password ${password}\e[0m"
-        useradd -m -p ${password} --base-dir /srv ${domainuser//./}
-        printf "${password}\n${password}\n" | passwd ${domainuser//./}
+	echo -e "\e[1;32mCreating user ${domainuser//./} with password ${password}\e[0m"
+	useradd -m -p ${password} --base-dir /srv ${domainuser//./}
+	printf "${password}\n${password}\n" | passwd ${domainuser//./}
 fi
 
 # Change user's shell
+echo -e "\e[1;32mChanging the shell to /bin/bash for user ${domainuser//./}\e[0m"
 chsh -s /bin/bash ${domainuser//./}
 
 # Create home for user
 if [ ! -d /srv/${domainuser//./}/www/${domainuser}/public_html ];
 then
         echo -e "\e[1;32mCreating home for ${domainuser}\e[0m"
-        mkdir -pv /srv/${domainuser//./}/www/${domainuser}/public_html
+	mkdir -pv /srv/${domainuser//./}/www/${domainuser}/public_html
 else
-        echo -e "\e[1;33mPath /srv/${domainuser//./}/www/${domainuser}/public_html already 
-exists\e[0m"
+	echo -e "\e[1;33mPath /srv/${domainuser//./}/www/${domainuser}/public_html already exists\e[0m"
 fi
 
 # Add welcome page to its home
 if [ ! -f /srv/${domainuser//./}/www/${domainuser}/public_html/index.html ];
 then
-        echo -e "\e[1;32mCreating welcome page for  ${domainuser//./}\e[0m"
-        mkdir -pv /srv/${domainuser//./}/www/${domainuser}/public_html
-        cat << EOF > /srv/${domainuser//./}/www/${domainuser}/public_html/index.html
-        <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
-"http://www.w3.org/TR/html4/loose.dtd">
-        <html>
-                <head>
-                        <title>Welcome ${domainuser//./}!</title>
-                </head>
-                <body>
-                        <h1>Welcome to ${domainuser}</h1>
-                </body>
-        </html>
+        echo -e "\e[1;32mCreating welcome page for ${domainuser//./} in /srv/${domainuser//./}/www/${domainuser}/public_html/index.html\e[0m"
+	mkdir -pv /srv/${domainuser//./}/www/${domainuser}/public_html
+	cat << EOF > /srv/${domainuser//./}/www/${domainuser}/public_html/index.html
+	<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+	<html>
+		<head>
+			<title>Welcome ${domainuser//./}!</title>
+		</head>
+		<body>
+			<h1>Welcome to ${domainuser}</h1>
+		</body>
+	</html>
 EOF
 else
-        echo -e "\e[1;33mFile /srv/${domainuser//./}/www/${domainuser}/public_html/index.html 
-already exists\e[0m"
+        echo -e "\e[1;33mFile /srv/${domainuser//./}/www/${domainuser}/public_html/index.html already exists\e[0m"
 fi
 
 # Make suer the user can live in it's home
+echo -e "\e[1;32mChanging ownership of files in /srv/${domainuser//./} to ${domainuser//./}:${domainuser//./}\e[0m"
 chown -Rv ${domainuser//./}:${domainuser//./} /srv/${domainuser//./}
 
 # Create virtual host
 if [ ! -f /etc/apache2/sites-available/${domainuser}.conf ];
 then
-        echo -e "\e[1;32mChanging vhost config for ${domainuser}\e[0m"
-        cp -pv /etc/apache2/sites-available/000-default.conf 
-/etc/apache2/sites-available/${domainuser}.conf
-        sed -i 's/webmaster@localhost/beheer@denit.nl/g' 
-/etc/apache2/sites-available/${domainuser}.conf
-        sed -i "s#/var/www/html#/srv/${domainuser//./}/www/${domainuser}/public_html#g" 
-/etc/apache2/sites-available/${domainuser}.conf
-        mkdir -pv ${APACHE_LOG_DIR}/domains
-        sed -i 's#${APACHE_LOG_DIR}#${APACHE_LOG_DIR}/domains/#g' 
-/etc/apache2/sites-available/${domainuser}.conf
-        sed -i "s@error.log@${domainuser}-error.log@g" 
-/etc/apache2/sites-available/${domainuser}.conf
-        sed -i "s@access.log@${domainuser}-access.log@g" 
-/etc/apache2/sites-available/${domainuser}.conf
-        sed -i "s@#ServerName www.example.com@ServerName ${domainuser}@g" 
-/etc/apache2/sites-available/${domainuser}.conf
+	echo -e "\e[1;32mChanging vhost config for ${domainuser}\e[0m"
+	cp -pv /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/${domainuser}.conf
+	sed -i 's/webmaster@localhost/beheer@denit.nl/g' /etc/apache2/sites-available/${domainuser}.conf
+	sed -i "s#/var/www/html#/srv/${domainuser//./}/www/${domainuser}/public_html#g" /etc/apache2/sites-available/${domainuser}.conf
+	mkdir -pv ${APACHE_LOG_DIR}/domains
+	sed -i 's#${APACHE_LOG_DIR}#${APACHE_LOG_DIR}/domains/#g' /etc/apache2/sites-available/${domainuser}.conf
+	sed -i "s@error.log@${domainuser}-error.log@g" /etc/apache2/sites-available/${domainuser}.conf
+	sed -i "s@access.log@${domainuser}-access.log@g" /etc/apache2/sites-available/${domainuser}.conf
+	sed -i "s@#ServerName www.example.com@ServerName ${domainuser}@g" /etc/apache2/sites-available/${domainuser}.conf
 else
-        echo -e "\e[1;33mFile /etc/apache2/sites-available/${domainuser}.conf already 
-exists\e[0m"
+	echo -e "\e[1;33mFile /etc/apache2/sites-available/${domainuser}.conf already exists\e[0m"
 fi
 
 
 if [ ! -h /etc/apache2/sites-enabled/${domainuser}.conf ];
 then
-        echo -e "\e[1;32mEnabling site ${domainuser}\e[0m"
-        a2ensite ${domainuser}.conf
+	echo -e "\e[1;32mEnabling site ${domainuser}\e[0m"
+	a2ensite ${domainuser}.conf
 else
         echo -e "\e[1;33mFile /etc/apache2/sites-enabled/${domainuser}.conf already exists\e[0m"
 fi
 
-echo -e "\e[1;32mRestarting apache2\e[0m"
 echo -e "\e[1;34mCreating alias\e[0m"
 ${execpath}createAlias.sh ${domainuser} www.${domainuser}
 echo -e "\e[1;34mCreating database and database user\e[0m"
 ${execpath}createDatabase.sh ${domainuser}
+
+echo ""
+echo -e "\e[1;33mDon't forget to restart apache2!\e[0m"
+echo ""
 
