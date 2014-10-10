@@ -2,7 +2,6 @@
 
 if [[ -z "$1" ]];
 then
-#	echo -e "\e[1;31m[red]\e[0m"
 	echo -e "\e[1;31mUsage: ./createVhost.sh <domainname.tld>\e[0m"
 	exit
 fi
