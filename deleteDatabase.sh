@@ -7,6 +7,11 @@ then
 	exit
 fi
 
+if [ ! -f /etc/mysql.passwd ];
+then
+	echo -e "\e[1;31mMake sure your MySQL root password is in /etc/mysql.passwd (chmod 400)\e[0m"
+fi
+
 if [[ -z "$2" ]];
 then
 	mySqlUserPassword=`tr -dc A-Za-z0-9_ < /dev/urandom | head -c8`
