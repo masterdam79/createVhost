@@ -43,8 +43,17 @@ else
 	rm -fv /etc/apache2/sites-{enabled,available}/${domainuser}.conf
 fi
 
+# Delete pool file
+if [ ! -f /etc/php5/fpm/pool.d/${domainuser}.conf ];
+then
+	echo -e "\e[1;33mFile /etc/php5/fpm/pool.d/${domainuser}.conf doesn't exists\e[0m"
+else
+	echo -e "\e[1;32mDeleting php-fpm config for ${domainuser}\e[0m"
+	rm -fv /etc/php5/fpm/pool.d/${domainuser}.conf
+fi
+
 echo -e "\e[1;34mDeleting database and database user\e[0m"
 ${execpath}deleteDatabase.sh ${domainuser}
 echo ""
-echo -e "\e[1;33mDon't forget to restart apache2!\e[0m"
+echo -e "\e[1;33mDon't forget to restart apache2 & php-fpm!\e[0m"
 echo ""

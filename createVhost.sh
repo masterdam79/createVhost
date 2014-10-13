@@ -66,7 +66,7 @@ else
         echo -e "\e[1;33mFile /srv/${domainuser//./}/www/${domainuser}/public_html/index.html already exists\e[0m"
 fi
 
-# Make suer the user can live in it's home
+# Make sure the user can live in it's home
 echo -e "\e[1;32mChanging ownership of files in /srv/${domainuser//./} to ${domainuser//./}:${domainuser//./}\e[0m"
 chown -Rv ${domainuser//./}:${domainuser//./} /srv/${domainuser//./}
 
@@ -134,6 +134,6 @@ echo -e "\e[1;34mCreating database and database user\e[0m"
 ${execpath}createDatabase.sh ${domainuser}
 
 echo ""
-echo -e "\e[1;33mDon't forget to restart apache2!\e[0m"
+echo -e "\e[1;33mDon't forget to restart apache2 & php-fpm!\e[0m"
 echo ""
 
