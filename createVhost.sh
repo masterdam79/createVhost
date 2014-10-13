@@ -70,22 +70,55 @@ fi
 echo -e "\e[1;32mChanging ownership of files in /srv/${domainuser//./} to ${domainuser//./}:${domainuser//./}\e[0m"
 chown -Rv ${domainuser//./}:${domainuser//./} /srv/${domainuser//./}
 
+# Get the last userd PHP-FPM port in a var
+lastPort=`egrep -r "^listen = 127.0.0.1" /etc/php5/fpm/pool.d/ | awk -F':' '{print $3}' | sort | tail -1`;
+
 # Create virtual host
 if [ ! -f /etc/apache2/sites-available/${domainuser}.conf ];
 then
 	echo -e "\e[1;32mChanging vhost config for ${domainuser}\e[0m"
-	cp -pv /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/${domainuser}.conf
-	sed -i 's/webmaster@localhost/beheer@denit.nl/g' /etc/apache2/sites-available/${domainuser}.conf
-	sed -i "s#/var/www/html#/srv/${domainuser//./}/www/${domainuser}/public_html#g" /etc/apache2/sites-available/${domainuser}.conf
 	mkdir -pv ${APACHE_LOG_DIR}/domains
-	sed -i 's#${APACHE_LOG_DIR}#${APACHE_LOG_DIR}/domains/#g' /etc/apache2/sites-available/${domainuser}.conf
-	sed -i "s@error.log@${domainuser}-error.log@g" /etc/apache2/sites-available/${domainuser}.conf
-	sed -i "s@access.log@${domainuser}-access.log@g" /etc/apache2/sites-available/${domainuser}.conf
-	sed -i "s@#ServerName www.example.com@ServerName ${domainuser}@g" /etc/apache2/sites-available/${domainuser}.conf
+	cat << EOF > /etc/apache2/sites-available/${domainuser}.conf
+<VirtualHost *:8080>
+	ServerName ${domainuser}
+	
+	ServerAdmin beheer@${domainuser}
+	DocumentRoot /srv/${domainuser//./}/www/${domainuser}/public_html
+	
+	ProxyPassMatch ^/(.*\.php(/.*)?)$ fcgi://127.0.0.1:$((lastPort+1))/srv/${domainuser//./}/www/${domainuser}/public_html/$1
+	
+	<Directory /srv/${domainuser//./}/www/${domainuser}/public_html>
+		Require all granted
+	</Directory>
+	
+	ErrorLog ${APACHE_LOG_DIR}/domains/${domainuser}-error.log
+	CustomLog ${APACHE_LOG_DIR}/domains/${domainuser}-access.log combined
+</VirtualHost>
+EOF
 else
 	echo -e "\e[1;33mFile /etc/apache2/sites-available/${domainuser}.conf already exists\e[0m"
 fi
 
+# Create Pool
+if [ ! -f /etc/php5/fpm/pool.d/${domainuser}.conf ];
+then
+	cat << EOF > /etc/php5/fpm/pool.d/${domainuser}.conf
+[${domainuser}]
+user = ${domainuser//./}
+group = ${domainuser//./}
+listen = 127.0.0.1:$((lastPort+1))
+listen.owner = ${domainuser//./}
+listen.group = ${domainuser//./}
+pm = dynamic
+pm.max_children = 5
+pm.start_servers = 2
+pm.min_spare_servers = 1
+pm.max_spare_servers = 3
+chdir = /
+EOF
+else
+	echo -e "\e[1;33mFile /etc/php5/fpm/pool.d/${domainuser}.conf already exists\e[0m"
+fi
 
 if [ ! -h /etc/apache2/sites-enabled/${domainuser}.conf ];
 then
