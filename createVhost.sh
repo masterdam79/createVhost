@@ -6,6 +6,14 @@ then
 	exit
 fi
 
+# Check if Varnish is installed
+if [ `dpkg --get-selections | grep varnish | wc -l` -gt 0 ];
+then
+	port="8080"
+else
+	port="80"
+fi
+
 domainuser=$1
 password=`tr -dc A-Za-z0-9_ < /dev/urandom | head -c8`
 APACHE_LOG_DIR=`grep APACHE_LOG_DIR /etc/apache2/envvars | awk -F'[ $=]' '{ print $3}'`
@@ -79,7 +87,7 @@ then
 	echo -e "\e[1;32mChanging vhost config for ${domainuser}\e[0m"
 	mkdir -pv ${APACHE_LOG_DIR}/domains
 	cat << EOF > /etc/apache2/sites-available/${domainuser}.conf
-<VirtualHost *:8080>
+<VirtualHost *:${port}>
 	ServerName ${domainuser}
 	
 	ServerAdmin beheer@${domainuser}
