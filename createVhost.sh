@@ -80,6 +80,7 @@ chown -Rv ${domainuser//./}:${domainuser//./} /srv/${domainuser//./}
 
 # Get the last userd PHP-FPM port in a var
 lastPort=`egrep -r "^listen = 127.0.0.1" /etc/php5/fpm/pool.d/ | awk -F':' '{print $3}' | sort | tail -1`;
+lastPortIncr=$((lastPort+1))
 
 # Create virtual host
 if [ ! -f /etc/apache2/sites-available/${domainuser}.conf ];
@@ -93,7 +94,7 @@ then
 	ServerAdmin beheer@${domainuser}
 	DocumentRoot /srv/${domainuser//./}/www/${domainuser}/public_html
 	
-	ProxyPassMatch ^/(.*\.php(/.*)?)$ fcgi://127.0.0.1:$((lastPort+1))/srv/${domainuser//./}/www/${domainuser}/public_html/$1
+	ProxyPassMatch ^/(.*\.php(/.*)?)$ fcgi://127.0.0.1:${lastPortIncr}/srv/${domainuser//./}/www/${domainuser}/public_html/\$1
 	
 	<Directory /srv/${domainuser//./}/www/${domainuser}/public_html>
 		Require all granted
@@ -114,7 +115,7 @@ then
 [${domainuser}]
 user = ${domainuser//./}
 group = ${domainuser//./}
-listen = 127.0.0.1:$((lastPort+1))
+listen = 127.0.0.1:${lastPortIncr}
 listen.owner = ${domainuser//./}
 listen.group = ${domainuser//./}
 pm = dynamic
