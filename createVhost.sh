@@ -79,8 +79,13 @@ echo -e "\e[1;32mChanging ownership of files in /srv/${domainuser//./} to ${doma
 chown -Rv ${domainuser//./}:${domainuser//./} /srv/${domainuser//./}
 
 # Get the last userd PHP-FPM port in a var
-lastPort=`egrep -r "^listen = 127.0.0.1" /etc/php5/fpm/pool.d/ | awk -F':' '{print $3}' | sort | tail -1`;
-lastPortIncr=$((lastPort+1))
+if [ `egrep -r "^listen = 127.0.0.1" /etc/php5/fpm/pool.d/ | awk -F':' '{print $3}' | sort | tail -1 | wc -l` -gt 0 ];
+then
+	lastPort=`egrep -r "^listen = 127.0.0.1" /etc/php5/fpm/pool.d/ | awk -F':' '{print $3}' | sort | tail -1`;
+	lastPortIncr=$((lastPort+1))
+else
+	lastPortIncr=9001
+fi
 
 # Create virtual host
 if [ ! -f /etc/apache2/sites-available/${domainuser}.conf ];
