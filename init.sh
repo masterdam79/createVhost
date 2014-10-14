@@ -9,6 +9,12 @@ apt-get update && apt-get upgrade
 apt-get -y install git apache2 mysql-server php5-mysql php5 libapache2-mod-php5 php5-mcrypt php5-fpm
 
 
+# Enable mods
+
+a2enmod proxy_fcgi
+
+
+
 # MySQL secure (interactive)
 mysql_install_db
 
